@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<style>
+  .profile-container {
+    max-width: 960px;
+    margin: 30px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #4a36bc;
+  }
+
+  form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  form input {
+    flex: 1 1 45%;
+    min-width: 280px;
+    padding: 12px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+
+  form button {
+    width: 100%;
+    padding: 14px;
+    background: #4a36bc;
+    color: white;
+    font-weight: bold;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  form button:hover {
+    background: #37299b;
+  }
+
+  @media (max-width: 600px) {
+    form input {
+      flex: 1 1 100%;
+    }
+  }
+</style>
+
+<div class="profile-container">
+  <h2>Edit Profile</h2>
+  <form id="editProfileForm">
+    <input type="text" name="user_name" placeholder="Full Name" required>
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="text" name="phone_number" placeholder="Phone Number" required>
+    <input type="password" name="old_password" placeholder="Old Password (required if changing password)">
+    <input type="password" name="new_password" placeholder="New Password">
+    <input type="password" name="repeat_password" placeholder="Repeat New Password">
+    <button type="submit">Update Profile</button>
+  </form>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const res = await fetch('/api/get_profile');
+      const result = await res.json();
+      if (result.status === 'success') {
+        const form = document.forms['editProfileForm'];
+        const data = result.data;
+        form.user_name.value = data.user_name || '';
+        form.email.value = data.email || '';
+        form.phone_number.value = data.phone_number !== 0 ? data.phone_number : '';
+      } else {
+        alert(result.message || 'Failed to load profile data.');
+      }
+    } catch (err) {
+      alert('Error fetching profile data.');
+      console.error(err);
+    }
+  });
+
+  document.getElementById('editProfileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const data = Object.fromEntries(new FormData(form).entries());
+
+    try {
+      const res = await fetch('/api/edit_profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      const result = await res.json();
+      alert(result.message);
+    } catch (err) {
+      alert('Error updating profile');
+      console.error(err);
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Campus Companion Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            /* Correct path for background image */
+            background-image: url("{{ url_for('static', filename='assets/img/sign-up-background.jpg') }}");
+            background-repeat: no-repeat;
+            background-size: cover; 
+            background-position: center; 
+            margin: 50px;
+            padding: 60px;
+          }
+ 
+        
+        .logo a {
+            text-decoration: none;
+            color: white;
+            font-size: 30px;
+            font-family: 'Kaushan Script', cursive;
+        }
+
+         .row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 100px;
+            margin-left: 100px;
+            padding:  50px;
+        }
+        
+       
+        
+        .form-box {
+            width: 300px;
+            background: rgba(4, 0, 3, 0.6);
+            padding: 30px;
+        }
+        
+        .main-heading {
+            color: rgb(255, 0, 123);
+            margin-bottom: 20px;
+        }
+        
+        .form {
+            text-align: center;
+        }
+        
+        .form input {
+            width: 100%;
+            margin-bottom: 15px;
+            padding: 10px;
+            border: none;
+            border-bottom: 1px solid black;
+            background: transparent;
+            color: white;
+        }
+        
+        .form button {
+            width: 100%;
+            padding: 10px;
+            background: rgb(143, 7, 52);
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .defination {
+            font-size: 24px;
+            color: white;
+            font-family: 'Kaushan Script', cursive;
+            padding: 20px;
+        }
+        
+    </style>
+    
+</head>
+<body>
+    <div class="full-page">
+        <div class="navigation-bar">
+            <div class="logo">
+                <a href="#">we are There To Help You</a>
+            </div>
+            <nav>
+                
+            </nav>
+        </div>
+        <div class="row">
+            <div class="col-1">
+                <div class="form-box">
+                    <div class="form">
+                        <form id="register-form" class="register-form">
+                            <center><h1 class="main-heading">Register Form</h1></center>
+                            <input type="text" placeholder="User Name" />
+                            <input type="text" placeholder="Email ID" />
+                            <input type="password" placeholder="Password" />
+                            <button type="submit">REGISTER</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            
+        </div>
+    </div>
+
+
+    <script>
+     
+// Get the register form element
+const registerForm = document.getElementById('register-form');
+
+// Function to validate email format (same as before)
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+// Add an event listener for the form submission
+registerForm.addEventListener('submit', function(event) {
+  // Prevent the default form submission behavior (page reload)
+  event.preventDefault();
+
+  // Get the values from the input fields (same as before)
+  const usernameInput = this.querySelector('input[placeholder="User Name"]');
+  const emailInput = this.querySelector('input[placeholder="Email ID"]');
+  const passwordInput = this.querySelector('input[placeholder="Password"]');
+
+  const username = usernameInput.value.trim();
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+
+  // Basic validation checks (same as before)
+  if (!username) {
+    Swal.fire({ // Changed to SweetAlert2
+      title: 'Error',
+      text: 'Please enter a User Name.',
+      icon: 'warning',
+      confirmButtonText: 'OK'
+    });
+    return;
+  }
+
+  if (!email) {
+    Swal.fire({ // Changed to SweetAlert2
+      title: 'Error',
+      text: 'Please enter an Email ID.',
+      icon: 'warning',
+      confirmButtonText: 'OK'
+    });
+    return;
+  }
+
+  if (!isValidEmail(email)) {
+    Swal.fire({ // Changed to SweetAlert2
+      title: 'Error',
+      text: 'Please enter a valid Email ID format.',
+      icon: 'warning',
+      confirmButtonText: 'OK'
+    });
+    return;
+  }
+
+  if (!password) {
+    Swal.fire({ // Changed to SweetAlert2
+      title: 'Error',
+      text: 'Please enter a Password.',
+      icon: 'warning',
+      confirmButtonText: 'OK'
+    });
+    return;
+  }
+
+  // Create the data object to send to the server (same as before)
+  const userData = {
+    username: username,
+    email: email,
+    password: password
+    // You might want to add a phone number field to your HTML form as well
+    // phone: "add phone number value here if you have it"
+  };
+
+ 
+  // Signup
+  fetch('/api/signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(userData)
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then(data => {
+    console.log('Response from server:', data);
+    if (data.status === 'success') {
+      Swal.fire({
+        title: 'Registration Successful!',
+        text: 'Please login to access your dashboard.',
+        icon: 'success',
+        confirmButtonText: 'OK',
+        willClose: () => {
+          window.location.href = '/dashboard';
+        }
+      });
+    } else if (data.status === 'fail') {
+      Swal.fire({
+        title: 'Registration Failed',
+        text: data.message, // Access the message property directly
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+    } else {
+      Swal.fire({
+        title: 'Error',
+        text: 'Registration failed due to an unexpected error.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    Swal.fire({ // Changed to SweetAlert2
+      title: 'Error',
+      text: 'Registration failed. Please try again later.',
+      icon: 'error',
+      confirmButtonText: 'OK'
+    });
+  });
+});
+    </script>
+</body>
+</html>

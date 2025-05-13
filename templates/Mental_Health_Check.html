@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% block title %}Mental Health Check-In{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background-image: url("{{ url_for('static', filename='assets/img/mywish.jpeg') }}");
+        background-size: cover;
+        background-position: center;
+    }
+
+    .container {
+        max-width: 700px;
+        margin: 0 auto;
+        background-color: rgba(113, 2, 198, 0.546);
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 0 12px rgba(14, 103, 197, 0.991);
+    }
+
+    h2 {
+        text-align: center;
+        color: #0cb5d7f3;
+        margin-bottom: 25px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #07d96ddf;
+    }
+
+    input[type="text"], textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+    }
+
+    .checkbox-group {
+        margin-bottom: 15px;
+    }
+
+    .checkbox-group label {
+        font-weight: normal;
+    }
+
+    .checkbox-group input {
+        margin-right: 10px;
+    }
+
+    button {
+        width: 100%;
+        padding: 12px;
+        background-color: #4a90e2;
+        color: white;
+        font-size: 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #2566cc;
+    }
+
+    #submittedList {
+        margin-top: 30px;
+        color: #f0f8ff;
+    }
+
+    #submittedList h3 {
+        color: #0cb5d7f3;
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    #checkInTable {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 15px;
+    }
+
+    #checkInTable th, #checkInTable td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        text-align: left;
+    }
+
+    #checkInTable th {
+        background-color: #4a90e2;
+        color: white;
+    }
+
+    #checkInTable tbody tr:nth-child(even) {
+        background-color: rgba(66, 135, 245, 0.1);
+    }
+
+    #checkInTable button {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 6px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    #checkInTable button:hover {
+        background-color: #c82333;
+    }
+</style>
+
+<div class="container">
+    <h2>Mental Health Check-In</h2>
+    <form id="mentalHealthCheckForm">
+        <label for="name">Your Name (optional):</label>
+        <input type="text" id="name" name="name">
+
+        <label>How are you feeling today?</label>
+        <div class="checkbox-group">
+            <label><input type="checkbox" name="feelings" value="Happy"> Happy</label>
+            <label><input type="checkbox" name="feelings" value="Anxious"> Anxious</label>
+            <label><input type="checkbox" name="feelings" value="Stressed"> Stressed</label>
+            <label><input type="checkbox" name="feelings" value="Tired"> Tired</label>
+            <label><input type="checkbox" name="feelings" value="Motivated"> Motivated</label>
+            <label><input type="checkbox" name="feelings" value="Sad"> Sad</label>
+        </div>
+
+        <label for="note">Anything you'd like to share?</label>
+        <textarea id="note" name="note" placeholder="Write your thoughts here..." rows="4"></textarea>
+
+        <button type="submit">Submit Check-In</button>
+    </form>
+
+    <div id="submittedList">
+        <h3>Submitted Check-Ins</h3>
+        <table id="checkInTable">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Feelings</th>
+                    <th>Note</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById('mentalHealthCheckForm');
+    const checkInTableBody = document.querySelector('#checkInTable tbody');
+
+    async function loadCheckIns() {
+        try {
+            const response = await fetch('/api/mental_health_check/view');
+            const result = await response.json();
+
+            if (response.ok && result.status === 'success' && result.data) {
+                checkInTableBody.innerHTML = '';
+                result.data.forEach(checkIn => {
+                    const row = checkInTableBody.insertRow();
+                    const feelingsText = checkIn.feelings ? checkIn.feelings.split(',').join(', ') : 'No feelings selected';
+                    row.insertCell().textContent = checkIn.name || 'Anonymous';
+                    row.insertCell().textContent = feelingsText;
+                    row.insertCell().textContent = checkIn.note || 'No note';
+                    const deleteCell = row.insertCell();
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.onclick = () => deleteCheckIn(checkIn.id);
+                    deleteCell.appendChild(deleteButton);
+                });
+            } else {
+                alert(`Failed to load check-ins: ${result.message || 'An error occurred'}`);
+            }
+        } catch (error) {
+            console.error('Error loading check-ins:', error);
+            alert('An error occurred while loading check-ins.');
+        }
+    }
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const name = form.name.value;
+        const feelings = Array.from(form.querySelectorAll('input[name="feelings"]:checked'))
+            .map(checkbox => checkbox.value);
+        const note = form.note.value;
+
+        try {
+            const response = await fetch('/api/mental_health_check/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, feelings, note })
+            });
+
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                loadCheckIns();
+               Swal.fire({
+                  title: 'Item added successfully!',
+                  icon: 'success',
+                  showConfirmButton: false,
+                  timer: 1500,
+                  willClose: () => {
+                    form.reset();
+                  }
+              });
+
+            } else {
+                alert(`Failed to submit check-in: ${result.message}`);
+            }
+        } catch (error) {
+            console.error('Error submitting check-in:', error);
+            alert('An error occurred while submitting the check-in.');
+        }
+    });
+
+    async function deleteCheckIn(checkInId) {
+        if (confirm('Are you sure you want to delete this check-in?')) {
+            try {
+                const response = await fetch('/api/mental_health_check/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: checkInId })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    loadCheckIns();
+                } else {
+                    alert(`Failed to delete check-in: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Error deleting check-in:', error);
+                alert('An error occurred while deleting the check-in.');
+            }
+        }
+    }
+
+    window.onload = loadCheckIns;
+</script>
+{% endblock %}

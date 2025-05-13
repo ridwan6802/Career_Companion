@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+
+{% block title %}Event Calendar{% endblock %}
+
+
+{% block head %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.css" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.5/main.js"></script>
+    <style>
+        #calendar {
+            max-width: 900px;
+            margin: 40px auto;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /* static/css/calendar.css */
+
+.fc {
+    font-family: 'Poppins', sans-serif; /* Modern font */
+    font-size: 15px;
+}
+
+/* Header Toolbar */
+.fc-header-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.2em;
+    padding: 1.3em 1.6em;
+    background: linear-gradient(135deg, #2962FF 0%, #1A237E 100%); /* Stronger blue gradient */
+    color: white;
+    border-radius: 0.4em;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Deeper shadow */
+}
+
+.fc-toolbar-title {
+    font-size: 2em;
+    font-weight: 700; /* Bolder title */
+    margin-right: 1.8em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); /* More pronounced text shadow */
+    letter-spacing: 0.02em;
+}
+
+.fc-button-group > .fc-button {
+    background-color: rgba(255, 255, 255, 0.9); /* Slightly less transparent */
+    color: #2962FF;
+    border: none;
+    border-radius: 0.3em;
+    padding: 0.7em 1.4em; /* Larger buttons */
+    cursor: pointer;
+    margin-left: 0.4em;
+    margin-right: 0.4em;
+    font-weight: 600;
+    transition: background-color 0.25s ease-in-out, color 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15); /* More visible button shadow */
+}
+
+.fc-button-group > .fc-button:hover {
+    background-color: white;
+    color: #1A237E;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25); /* Stronger hover shadow */
+    transform: translateY(-2px); /* Slight lift on hover */
+}
+
+.fc-button-group > .fc-button:active,
+.fc-button-group > .fc-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.25rem rgba(41, 98, 255, 0.6); /* More prominent focus ring */
+}
+
+/* Calendar Grid Body */
+.fc-daygrid-body {
+    border: 2px solid #ddd; /* Thicker border */
+    border-radius: 0.4em;
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.1); /* More noticeable grid shadow */
+    overflow: hidden; /* Prevent rounded corners from being clipped */
+}
+
+.fc-daygrid-day {
+    border-bottom: 2px solid #ddd;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.fc-daygrid-day:last-child {
+    border-bottom: none;
+}
+
+.fc-daygrid-day-top {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center; /* Center day number vertically */
+    padding: 0.8em;
+}
+
+.fc-daygrid-day-number {
+    font-size: 1.1em;
+    color: #444;
+    font-weight: 500;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+.fc-day-today {
+    background-color: #e6f7ff; /* Lighter blue for today */
+    border: 2px solid #b3e0ff;
+}
+
+/* Friday and Saturday Styling */
+.fc-day-fri,
+.fc-day-sat {
+    color: #ff6666; /* Softer red, adjust as needed */
+}
+
+.fc-day-fri .fc-daygrid-day-number,
+.fc-day-sat .fc-daygrid-day-number {
+    font-weight: 600; /* Make day numbers bolder on Fri/Sat */
+}
+
+.fc-day-fri {
+    background-color: #fff0f0; /* Very light red background for Fridays */
+}
+
+.fc-day-sat {
+    background-color: #fff0f0; /* Very light red background for Saturdays */
+}
+
+
+/* Event Styling */
+.fc-event {
+    background: linear-gradient(135deg, #7E57C2 0%, #512DA8 100%); /* Purple gradient */
+    color: white;
+    border: none;
+    margin: 4px;
+    /*padding: 0.7em 1em;*/
+    border-radius: 0.3em;
+    font-size: 0.95em;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.fc-event:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.fc-event-title {
+    font-weight: 500;
+    letter-spacing: 0.01em;
+}
+
+/* Week Numbers */
+.fc-col-header-text.fc-week-number {
+    color: #888;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.fc-daygrid-week-number {
+    color: #888;
+    font-size: 0.9em;
+    padding: 0.8em;
+    font-weight: 500;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+/* All-Day Events */
+.fc-daygrid-event-harness-abs {
+    padding: 0 4px;
+}
+
+/* More Specific Styles (Example) */
+/* .fc-event[data-club="BRAC Drama Club"] {
+    background: linear-gradient(135deg, #FFCA28 0%, #FF9800 100%);
+    color: #212529;
+} */
+
+
+.fc .fc-daygrid-day.fc-day-today {
+    background-color: #ffcccc; /* Light red for today */
+    border: 2px solid #ff9999;   /* Slightly darker red border */
+    font-weight: bold;          /* Optional: Bold text for emphasis */
+    color: #880000;             /* Optional: Darker red text */
+}
+
+
+.fc-daygrid-body {
+    /* Existing styles */
+    border: 2px solid #ddd;
+    border-radius: 0.4em;
+    box-shadow: 0 3px 7px rgba(0, 0, 0, 0.1);
+    overflow: hidden; /* Already present, helps with rounded corners */
+    max-height: calc(100vh - 200px); /* Example max height, adjust as needed */
+}
+
+.fc-scroller {
+    overflow: hidden !important; /* Hide the scrollbar */
+}
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container mt-4">
+        <h1 style="text-align: center;" class="mb-4">Calender</h1>
+        <div id="calendar"></div>
+    </div>
+
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: [],  // Initially empty, we'll populate it
+                eventClick: function(info) {
+                    Swal.fire({
+                        title: 'Event Details',
+                        html: `
+                            <div>
+                                <p><b>Title:</b> ${info.event.title}</p>
+                                <p><b>Club:</b> ${info.event.extendedProps.club}</p>
+                                <p><b>Type:</b> ${info.event.extendedProps.eventType}</p>
+                                <p><b>Location:</b> ${info.event.extendedProps.location}</p>
+                                <p><b>Start Time:</b> ${info.event.start.toLocaleString()}</p>
+                            </div>
+                        `,
+                        icon: 'info',
+                        confirmButtonText: 'OK'
+                        // You can add more details or actions here
+                    });
+                    // You can add logic here to show more details or redirect to a page
+                }
+            });
+            calendar.render();
+
+            // Fetch events from the server
+            fetch('/api/calendar_events')
+                .then(response => response.json())
+                .then(data => {
+                    const formattedEvents = data.map(event => ({
+                        id: event.id,
+                        title: event.title,
+                        start: event.start,
+                        extendedProps: {
+                            club: event.club,
+                            eventType: event.eventType,
+                            location: event.location
+                        }
+                    }));
+                    calendar.addEventSource(formattedEvents); // Add the events to the calendar
+                })
+                .catch(error => {
+                    console.error('Error fetching events:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to fetch calendar events.',
+                        confirmButtonText: 'OK'
+                    });
+                });
+        });
+    </script>
+{% endblock %}

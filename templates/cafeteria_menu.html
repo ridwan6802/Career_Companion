@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% block title %}Cafeteria Menu - Campus Companion{% endblock %}
+
+
+{% block head %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <style>
+        .menu-card {
+            transition: transform 0.2s;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .menu-card:hover {
+            transform: translateY(-3px);
+        }
+        .food-image {
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px 8px 0 0;
+        }
+        .rating-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .rating-btn {
+            border: none;
+            background: none;
+            font-size: 1.5em;
+            transition: transform 0.2s;
+        }
+        .rating-btn:hover {
+            transform: scale(1.2);
+        }
+        .menu-filter {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .price-tag {
+            font-weight: bold;
+            color: #198754;
+        }
+        .availability {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container mt-4">
+        <h1 class="mb-4">🍽️ Today's Cafeteria Menu</h1>
+
+        <!-- Filter Section -->
+        
+
+        <!-- Menu Grid -->
+     <!--   <div id="menu-container" class="row">
+          
+          
+            <div class="col-md-4">
+                <div class="card menu-card">
+                    <img src="https://via.placeholder.com/400x300" class="food-image" alt="Shingara">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="card-title">Shingara</h5>
+                            <span class="price-tag">৳15</span>
+                        </div>
+                        <p class="availability">
+                            <i class="bi bi-clock"></i> Available now
+                            <span class="badge bg-success ms-2">In Stock</span>
+                        </p>
+                        <div class="rating-buttons">
+                            <button class="rating-btn" title="Love it!">👍</button>
+                            <button class="rating-btn" title="Not good">👎</button>
+                            <span class="ms-2 text-muted">(23 ratings)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card menu-card">
+                    <img src="https://via.placeholder.com/400x300" class="food-image" alt="Chicken Burger">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="card-title">Chicken Burger</h5>
+                            <span class="price-tag">৳120</span>
+                        </div>
+                        <p class="availability">
+                            <i class="bi bi-clock"></i> Available now
+                            <span class="badge bg-warning ms-2">Running Low</span>
+                        </p>
+                        <div class="rating-buttons">
+                            <button class="rating-btn" title="Love it!">👍</button>
+                            <button class="rating-btn" title="Not good">👎</button>
+                            <span class="ms-2 text-muted">(45 ratings)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card menu-card">
+                    <img src="https://via.placeholder.com/400x300" class="food-image" alt="Coffee">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h5 class="card-title">Hot Coffee</h5>
+                            <span class="price-tag">৳30</span>
+                        </div>
+                        <p class="availability">
+                            <i class="bi bi-clock"></i> Available now
+                            <span class="badge bg-success ms-2">In Stock</span>
+                        </p>
+                        <div class="rating-buttons">
+                            <button class="rating-btn" title="Love it!">👍</button>
+                            <button class="rating-btn" title="Not good">👎</button>
+                            <span class="ms-2 text-muted">(67 ratings)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>  -->
+
+
+
+        <div id="menu-container" class="row justify-content-center align-items-center" style="min-height: 200px;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+        <script>
+        fetch('/api/cafeteria_menu')
+            .then(response => response.json())
+            .then(data => {
+                const menuContainer = document.getElementById('menu-container');
+                menuContainer.innerHTML = ''; // Clear placeholder content
+
+                data.forEach(item => {
+                    const card = document.createElement('div');
+                    card.classList.add('col-md-4');
+                    card.innerHTML = `
+                        <div class="card menu-card">
+                            <img src="${item.image_url}" class="food-image" alt="${item.name}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <h5 class="card-title">${item.name}</h5>
+                                    <span class="price-tag">৳${item.price.toFixed(2)}</span>
+                                </div>
+                                <p class="availability">
+                                    <i class="bi bi-tag"></i> ${item.availability}
+                                </p>
+                                <div class="rating-buttons">
+                                    <button style="display:none;" class="rating-btn" title="Love it!">👍</button>
+                                    <button style="display:none;" class="rating-btn" title="Not good">👎</button>
+                                    <span class="ms-2 text-muted">(${item.rating_count} ratings)</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    menuContainer.appendChild(card);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching menu:', error);
+                menuContainer.innerHTML = '<p class="error">Failed to load menu.</p>';
+            });
+    </script>
+
+{% endblock %}

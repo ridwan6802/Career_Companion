@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}Class Routine{% endblock %}
+
+{% block content %}
+<style>
+  .routine-container {
+    max-width: 960px;
+    margin: 30px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+  }
+
+  h2 {
+    text-align: center;
+    margin-bottom: 25px;
+    color: #4a36bc;
+  }
+
+  form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+  }
+
+  form input, form select, form button {
+    padding: 12px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+  }
+
+  form button {
+    grid-column: span 2;
+    background: #4a36bc;
+    color: white;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+
+  form button:hover {
+    background: #37299b;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+
+  th, td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+  }
+
+  th {
+    background: #4a36bc;
+    color: white;
+  }
+
+  td:last-child span {
+    color: crimson;
+    cursor: pointer;
+  }
+
+  @media (max-width: 768px) {
+    form {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<div class="routine-container">
+  <h2>Routine Manager</h2>
+  <form id="routineForm">
+    <select name="day" required>
+      <option value="">Select Day</option>
+      <option>Saturday</option>
+      <option>Sunday</option>
+      <option>Monday</option>
+      <option>Tuesday</option>
+      <option>Wednesday</option>
+      <option>Thursday</option>
+    </select>
+    <input type="datetime-local" name="datetime" required />
+    <input type="text" name="room" placeholder="Room Number" required />
+    <input type="text" name="faculty" placeholder="Faculty Name" required />
+    <input type="text" name="course" placeholder="Course Name" required />
+    <button type="submit">Add to Routine</button>
+  </form>
+
+  <table id="routineTable">
+    <thead>
+      <tr>
+        <th>Day</th>
+        <th>Time</th>
+        <th>Room</th>
+        <th>Faculty</th>
+        <th>Course</th>
+        <th>Delete</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+  const form = document.getElementById('routineForm');
+  const table = document.getElementById('routineTable').querySelector('tbody');
+
+  async function loadRoutineData() {
+    try {
+      const response = await fetch('http://127.0.0.1:5000/api/class_routine_viewer/view');
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        table.innerHTML = '';
+        result.data.forEach(routine => {
+          const row = table.insertRow();
+          row.setAttribute('data-id', routine.id);
+          row.innerHTML = `
+            <td>${routine.day}</td>
+            <td>${routine.datetime}</td>
+            <td>${routine.room}</td>
+            <td>${routine.faculty}</td>
+            <td>${routine.course}</td>
+            <td><span onclick="deleteRow(this, ${routine.id})">Delete</span></td>
+          `;
+        });
+      } else {
+        alert("Failed to load data: " + result.message);
+      }
+    } catch (err) {
+      alert("Error loading data.");
+      console.error(err);
+    }
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(form));
+
+    try {
+      const response = await fetch('http://127.0.0.1:5000/api/class_routine_viewer/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        loadRoutineData();
+                      Swal.fire({
+                        title: 'Added successfully!',
+                        icon: 'success',
+                        showConfirmButton: false,
+                        timer: 1500,
+                        willClose: () => {
+                          form.reset();
+                        }
+                    });
+        
+      } else {
+        alert("Failed to add: " + result.message);
+      }
+    } catch (err) {
+      alert("Error adding routine.");
+      console.error(err);
+    }
+  });
+
+  async function deleteRow(span, id) {
+    try {
+      const response = await fetch('http://127.0.0.1:5000/api/class_routine_viewer/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+
+      const result = await response.json();
+      if (result.status === 'success') {
+        span.closest('tr').remove();
+      } else {
+        alert("Delete failed: " + result.message);
+      }
+    } catch (err) {
+      alert("Error deleting routine.");
+      console.error(err);
+    }
+  }
+
+  window.onload = loadRoutineData;
+</script>
+{% endblock %}

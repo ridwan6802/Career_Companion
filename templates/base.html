@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Campus Companion{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="dashboard-title"><span onclick="window.location.href='/dashboard'">Campus Companion Dashboard</span></div>
+    <div class="right">
+      <div class="profile-wrapper" onclick="window.location.href='/calendar'">
+        <div class="notification-icon">
+          <span class="material-icons">calendar_month</span>
+        </div>
+        <div class="notification-tikmark">
+
+        </div>
+      </div>
+      <div class="profile-wrapper" onclick="window.location.href='/notifier'">
+        <div class="notification-icon">
+          <span class="material-icons">notification_important</span>
+        </div>
+        <div class="notification-tikmark">
+
+        </div>
+      </div>
+      <div class="profile-wrapper" onclick="toggleDropdown2()">
+        <div class="profile-pic">
+          <img src="https://placehold.co/400x400?text={{ session['username'][0]|upper }}" alt="Profile">
+        </div>
+        <div class="dropdown" id="profileDropdown2" style="display: none;">
+          <a href="/edit_profile">Edit Profile</a>
+          <a href="/logout">Logout</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Page Content -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; {{ current_year }} Campus Companion. All rights reserved.</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    function toggleDropdown2() {
+      const dropdown = document.getElementById("profileDropdown2");
+      dropdown.style.display = dropdown.style.display === "none" ? "block" : "none";
+    }
+  </script>
+
+  {% block scripts %}{% endblock %}
+
+</body>
+</html>

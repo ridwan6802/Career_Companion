@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block head %}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url("{{ url_for('static', filename='assets/img/Vacancy_Board.jpg') }}");
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+        }
+
+        h2 {
+            text-align: center;
+            color: blanchedalmond;
+        }
+
+        form {
+            max-width: 500px;
+            background: rgba(132, 154, 24, 0.718);
+            padding: 20px;
+            margin: auto;
+            border-radius: 15px;
+            box-shadow: 0 0 8px rgba(13, 208, 211, 0.943);
+        }
+
+        form input,
+        form textarea,
+        form select,
+        form button {
+            width: 100%;
+            height: 40px;
+            padding: 5px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #d42424;
+            background-color: rgba(214, 233, 185, 0.832);
+            color: #d4249f;
+            font-size: 14px;
+        }
+
+        form textarea {
+            height: 80px;
+        }
+
+        form button {
+            height: auto;
+            padding: 10px 15px;
+        }
+
+        #vacancy-list {
+            margin-top: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .vacancy-card {
+            background: #bdd91b77;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(224, 32, 32, 0.414);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vacancy-details-container {
+            flex-grow: 1;
+        }
+
+        .status-label {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            color: white;
+            margin-left: 10px;
+        }
+
+        .status-open {
+            background-color: green;
+        }
+
+        .status-booked {
+            background-color: orange;
+        }
+
+        .status-ongoing {
+            background-color: blue;
+        }
+
+        .status-closed {
+            background-color: rgb(227, 23, 23);
+        }
+
+        .status-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .status-controls select,
+        .status-controls button {
+            padding: 5px;
+            height: auto;
+        }
+
+        .delete-button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .delete-button:hover {
+            background-color: #c82333;
+        }
+
+        .post-info {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h2>Post a Job/RA/TA Vacancy</h2>
+    <form id="vacancy-form" onsubmit="return false;">
+        <input type="text" id="vacancy-title" placeholder="Job Title or Role" required>
+        <select id="poster-role" name="posterRole">
+            <option value="teacher">Teacher (RA/TA/ST)</option>
+            <option value="student">Student (Job)</option>
+        </select>
+        <textarea id="vacancy-details" placeholder="Enter job description, requirements, contact..." rows="4"
+            required></textarea>
+        <button type="submit" onclick="postVacancy()">Post Vacancy</button>
+    </form>
+
+    <div id="vacancy-list"></div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        const form = document.getElementById('vacancy-form');
+        const vacancyList = document.getElementById('vacancy-list');
+
+        async function loadVacancies() {
+            try {
+                const response = await fetch('/api/vacancy_board/view');
+                const result = await response.json();
+                if (result.status === 'success') {
+                    vacancyList.innerHTML = '';
+                    result.data.forEach(vacancy => displayVacancy(vacancy));
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                console.error('Load error:', error);
+                alert('Failed to load vacancies.');
+            }
+        }
+
+        async function postVacancy() {
+            const title = document.getElementById('vacancy-title').value.trim();
+            const role = document.getElementById('poster-role').value;
+            const details = document.getElementById('vacancy-details').value.trim();
+
+            if (!title || !details) return;
+
+            try {
+                const response = await fetch('/api/vacancy_board/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, details, post_user_type: role })
+                });
+
+                const result = await response.json();
+                if (result.status === 'success') {
+                    loadVacancies();
+
+                                   Swal.fire({
+                  title: 'Data added/ post successfully!',
+                  icon: 'success',
+                  showConfirmButton: false,
+                  timer: 1500,
+                  willClose: () => {
+                    form.reset();
+                  }
+              });
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                console.error('Post error:', error);
+                alert('Error posting vacancy.');
+            }
+        }
+
+        async function updateVacancyStatus(id, status) {
+            try {
+                const response = await fetch('/api/vacancy_board/update_status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, status })
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    loadVacancies();
+                    alert('Status updated.');
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                console.error('Status update error:', error);
+                alert('Error updating status.');
+            }
+        }
+
+        async function deleteVacancy(id) {
+            if (!confirm('Delete this vacancy?')) return;
+            try {
+                const response = await fetch('/api/vacancy_board/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                const result = await response.json();
+                if (result.status === 'success') {
+                    loadVacancies();
+                    alert('Vacancy deleted.');
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('Error deleting vacancy.');
+            }
+        }
+
+        function displayVacancy(vacancy) {
+            const card = document.createElement('div');
+            card.className = 'vacancy-card';
+
+            const statusLabel = document.createElement('span');
+            statusLabel.className = `status-label status-${vacancy.status}`;
+            statusLabel.textContent = capitalize(vacancy.status);
+
+            const controlsDiv = document.createElement('div');
+            controlsDiv.className = 'status-controls';
+
+            const label = document.createElement('label');
+            label.textContent = 'Status:';
+
+            const select = document.createElement('select');
+            ['open', 'booked', 'ongoing', 'closed'].forEach(status => {
+                const option = document.createElement('option');
+                option.value = status;
+                option.textContent = capitalize(status);
+                if (status === vacancy.status) option.selected = true;
+                select.appendChild(option);
+            });
+
+            const saveBtn = document.createElement('button');
+            saveBtn.textContent = 'Save Status';
+            saveBtn.onclick = () => updateVacancyStatus(vacancy.id, select.value);
+
+            controlsDiv.append(label, select, statusLabel);
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-button';
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.onclick = () => deleteVacancy(vacancy.id);
+
+            card.innerHTML = `
+                <div class="vacancy-details-container">
+                    <h3>${vacancy.title}</h3>
+                    <p><strong>ID:</strong> ${vacancy.id}</p>
+                    <p><strong>Posted by Type:</strong> ${vacancy.post_user_type}</p>
+                    <p><strong>User ID:</strong> ${vacancy.user_id}</p>
+                    <p>${vacancy.details}</p>
+                    <p class="post-info">Posted on: ${new Date(vacancy.created_at).toLocaleString()}</p>
+                </div>
+            `;
+
+            if (vacancy.can_edit) controlsDiv.appendChild(saveBtn);
+            if (vacancy.can_delete) controlsDiv.appendChild(deleteBtn);
+
+            card.appendChild(controlsDiv);
+            vacancyList.appendChild(card);
+        }
+
+        function capitalize(text) {
+            return text.charAt(0).toUpperCase() + text.slice(1);
+        }
+
+        window.onload = loadVacancies;
+    </script>
+{% endblock %}

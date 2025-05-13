@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+
+{% block head %}
+<style>
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f7fa;
+  }
+
+
+
+  .dropdown a:hover {
+    background-color: #f2f2f2;
+  }
+
+  .dashboard {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 30px;
+    max-width: 1200px;
+    margin: auto;
+  }
+
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-align: center;
+  }
+
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .card h3 {
+    margin-bottom: 12px;
+    font-size: 20px;
+    color: #2c3e50;
+  }
+
+  .card p {
+    font-size: 14px;
+    color: #666;
+  }
+
+  .card a {
+    display: inline-block;
+    margin-top: 15px;
+    text-decoration: none;
+    background-color: #2980b9;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 6px;
+    transition: background-color 0.3s;
+  }
+
+  .card a:hover {
+    background-color: #1f6391;
+  }
+
+  @media (max-width: 600px) {
+    .dashboard-title {
+      font-size: 20px;
+    }
+
+    .card h3 {
+      font-size: 18px;
+    }
+  }
+</style>
+{% endblock %}
+{% block content %}
+<div class="dashboard">
+  <div class="card">
+    <h3>📘 Class Routine Viewer</h3>
+    <p>Check your daily and weekly class schedule anytime.</p>
+    <a href="/class_routine_viewer">Open</a>
+  </div>
+
+  <div class="card">
+    <h3>📝 Study Note Sharing</h3>
+    <p>Share and access class notes uploaded by peers.</p>
+    <a href="/study_note_sharing">View Notes</a>
+  </div>
+
+  <div class="card">
+    <h3>🔍 Lost & Found</h3>
+    <p>Report lost items or browse found objects.</p>
+    <a href="/Lost_And_Found_Board">Check Board</a>
+  </div>
+
+  <div class="card">
+    <h3>💬 Peer Chat Room</h3>
+    <p>Chat with your classmates and share information.</p>
+    <a href="/Peer_Chatroom">Join Chat</a>
+  </div>
+
+  <div class="card">
+    <h3>🎉 Club Events Feed</h3>
+    <p>See upcoming events and activities by BRACU clubs.</p>
+    <a href="/club_events_feed">Explore Events</a>
+  </div>
+
+  <div class="card">
+    <h3>🧠 Mental Health Check-In</h3>
+    <p>Track your mood or reach out for mental support.</p>
+    <a href="/Mental_Health_Check">Check In</a>
+  </div>
+
+  <div class="card">
+    <h3>👨‍🏫 Teacher Directory</h3>
+    <p>Find teacher contact info and consultation hours.</p>
+    <a href="/Teacher_Directory">Browse Teachers</a>
+  </div>
+
+  <div class="card">
+    <h3>📢 Vacancy Board</h3>
+    <p>Get updates on intern or job opportunities.</p>
+    <a href="/Vacancy_Board">See Listings</a>
+  </div>
+
+  <div class="card">
+    <h3>🍽 Cafeteria Menu</h3>
+    <p>See today’s specials and regular items in the cafe.</p>
+    <a href="/cafeteria_menu">View Menu</a>
+  </div>
+
+  <div class="card">
+    <h3>🧩 Alumni Connect</h3>
+    <p>Alumni Connect helps you connect and learn from BRACU alumni.</p>
+    <a href="/Alumni_Connect">Start</a>
+  </div>
+</div>
+
+<script>
+  function toggleDropdown() {
+    const dropdown = document.getElementById("profileDropdown");
+    dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+  }
+
+  document.addEventListener("click", function (event) {
+    const dropdown = document.getElementById("profileDropdown");
+    const profile = document.querySelector(".profile-wrapper");
+    if (!profile.contains(event.target)) {
+      dropdown.style.display = "none";
+    }
+  });
+</script>
+{% endblock %}
+
+
+
+
+

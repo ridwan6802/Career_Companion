@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    body {
+        font-family: 'Segoe UI', sans-serif;
+        background-image: url("{{ url_for('static', filename='assets/img/Teacher_Directory.jpeg') }}");
+        background-repeat: no-repeat;
+        background-size: cover;
+        background-position: center;
+        background-color: #f3f4f6;
+        margin: 0;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: auto;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 35px 40px;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(5px);
+    }
+
+    h2 {
+        text-align: center;
+        font-size: 2rem;
+        margin-bottom: 30px;
+        color: #1a202c;
+        font-weight: 600;
+        border-bottom: 2px solid #4299e1;
+        padding-bottom: 10px;
+    }
+
+    form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+
+    form input,
+    form textarea {
+        padding: 12px 14px;
+        font-size: 16px;
+        border: 1px solid #cbd5e0;
+        border-radius: 8px;
+        background-color: #f7fafc;
+        transition: border 0.3s ease;
+    }
+
+    form input:focus,
+    form textarea:focus {
+        border-color: #4299e1;
+        outline: none;
+        background-color: #fff;
+    }
+
+    form textarea {
+        grid-column: span 2;
+        resize: vertical;
+        min-height: 90px;
+    }
+
+    form button {
+        grid-column: span 2;
+        padding: 14px;
+        background: linear-gradient(135deg, #4299e1, #3182ce);
+        color: white;
+        font-size: 16px;
+        font-weight: 500;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    form button:hover {
+        background: linear-gradient(135deg, #2b6cb0, #2c5282);
+        transform: translateY(-2px);
+    }
+
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 10px;
+    }
+
+    th {
+        background-color: #2b6cb0;
+        color: white;
+        padding: 14px;
+        text-align: left;
+        font-weight: 600;
+        border-radius: 8px 8px 0 0;
+    }
+
+    td {
+        padding: 14px;
+        background-color: #edf2f7;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        vertical-align: top;
+    }
+
+    tr td:last-child {
+        text-align: center;
+    }
+
+    .delete-button {
+        background-color: #e53e3e;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .delete-button:hover {
+        background-color: #c53030;
+    }
+
+    @media (max-width: 768px) {
+        form {
+            grid-template-columns: 1fr;
+        }
+
+        form textarea,
+        form button {
+            grid-column: span 1;
+        }
+
+        th,
+        td {
+            font-size: 14px;
+        }
+    }
+</style>
+
+
+<div class="container">
+    <h2>Teacher Directory</h2>
+    <form id="teacherForm" onsubmit="return false;">
+        <input type="text" name="facultyName" placeholder="Faculty Name" required>
+        <input type="email" name="email" placeholder="Email Address" required>
+        <input type="text" name="consultationHours" placeholder="Consultation Hours" required>
+        <input type="text" name="coursesDone" placeholder="Courses Done Under This Faculty" required>
+        <textarea name="note" placeholder="Write a note about the faculty..." required></textarea>
+        <button onclick="addTeacher()">Add to Directory</button>
+    </form>
+
+    <table id="teacherTable">
+        <thead>
+            <tr>
+                <th>Faculty Name</th>
+                <th>Email</th>
+                <th>Consultation Hours</th>
+                <th>Courses Done</th>
+                <th>Note</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script>
+    const form = document.getElementById('teacherForm');
+    const table = document.getElementById('teacherTable').getElementsByTagName('tbody')[0];
+
+    async function loadTeachers() {
+        try {
+            const response = await fetch('/api/teacher_directory/view');
+            if (!response.ok) {
+                const error = await response.json();
+                alert(`Failed to load teachers: ${error.message || 'An error occurred'}`);
+                return;
+            }
+            const result = await response.json();
+            if (result.status === 'success' && result.data) {
+                table.innerHTML = '';
+                result.data.forEach(teacher => {
+                    displayTeacher(teacher);
+                });
+            } else if (result.status === 'error') {
+                alert(`Failed to load teachers: ${result.message}`);
+            }
+        } catch (error) {
+            console.error('Error loading teachers:', error);
+            alert('An error occurred while loading teachers.');
+        }
+    }
+
+    async function addTeacher() {
+        const name = form.facultyName.value;
+        const email = form.email.value;
+        const hours = form.consultationHours.value;
+        const courses = form.coursesDone.value;
+        const note = form.note.value;
+
+        const teacherData = {
+            faculty_name: name,
+            email: email,
+            consultation_hours: hours,
+            courses_done: courses,
+            note: note
+        };
+
+        try {
+            const response = await fetch('/api/teacher_directory/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(teacherData)
+            });
+
+            const result = await response.json();
+
+            if (result.status === 'success') {
+                loadTeachers();
+             Swal.fire({
+                  title: 'Data added successfully!',
+                  icon: 'success',
+                  showConfirmButton: false,
+                  timer: 1500,
+                  willClose: () => {
+                    form.reset();
+                  }
+              });
+
+            } else {
+                alert(`Failed to add teacher: ${result.message}`);
+            }
+        } catch (error) {
+            console.error('Error adding teacher:', error);
+            alert('An error occurred while adding the teacher.');
+        }
+    }
+
+    async function deleteTeacher(teacherId) {
+        if (confirm('Are you sure you want to delete this teacher?')) {
+            try {
+                const response = await fetch('/api/teacher_directory/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: teacherId })
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    loadTeachers();
+                } else {
+                    alert(`Failed to delete teacher: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Error deleting teacher:', error);
+                alert('An error occurred while deleting the teacher.');
+            }
+        }
+    }
+
+    function displayTeacher(teacher) {
+        const row = table.insertRow();
+        row.insertCell().textContent = teacher.faculty_name;
+        row.insertCell().textContent = teacher.email;
+        row.insertCell().textContent = teacher.consultation_hours;
+        row.insertCell().textContent = teacher.courses_done;
+        row.insertCell().textContent = teacher.note;
+        const deleteCell = row.insertCell();
+        if (teacher.can_delete) {
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.classList.add('delete-button');
+            deleteButton.onclick = () => deleteTeacher(teacher.id);
+            deleteCell.appendChild(deleteButton);
+        }
+    }
+
+    window.onload = loadTeachers;
+</script>
+{% endblock %}
